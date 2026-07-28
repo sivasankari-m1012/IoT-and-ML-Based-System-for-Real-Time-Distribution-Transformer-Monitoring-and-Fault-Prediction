@@ -1,0 +1,2 @@
+# IoT-and-ML-Based-System-for-Real-Time-Distribution-Transformer-Monitoring-and-Fault-Prediction
+IoT and Machine Learning-based system for real-time distribution transformer monitoring and fault prediction. Uses Arduino Uno, ESP8266, and sensors to collect transformer data, with a web dashboard for remote monitoring. Machine Learning models detect anomalies and predict faults to improve reliability and enable predictive maintenance.
