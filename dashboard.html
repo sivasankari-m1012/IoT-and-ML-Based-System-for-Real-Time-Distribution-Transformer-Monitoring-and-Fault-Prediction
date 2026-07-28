@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Smart Transformer Dashboard</title>
+
+    <!-- AUTO REFRESH -->
+    <meta http-equiv="refresh" content="3">
+
+    <!-- CHART JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            margin: 10px;
+            width: 180px;
+            border-radius: 12px;
+            font-size: 20px;
+        }
+
+        .normal {
+            color: lime;
+        }
+
+        .fault {
+            color: red;
+            font-size: 30px;
+        }
+
+        .off {
+            color: orange;
+            font-size: 30px;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>⚡ Smart Transformer Monitoring Dashboard</h1>
+
+    <!-- LIVE DATA -->
+    <div class="container">
+
+        <div class="card">
+            🌡 Temperature
+            <br><br>
+            {{ temp }} °C
+        </div>
+
+        <div class="card">
+            ⚡ Voltage
+            <br><br>
+            {{ voltage }} V
+        </div>
+
+        <div class="card">
+            🔌 Current
+            <br><br>
+            {{ current }} A
+        </div>
+
+        <div class="card">
+            🛢 Oil %
+            <br><br>
+            {{ oil }} %
+        </div>
+
+    </div>
+
+    <!-- STATUS -->
+    <h2>
+
+        {% if status == "FAULT" %}
+
+        <div class="fault">
+            🚨 FAULT DETECTED 🚨
+        </div>
+
+        <!-- ALERT SOUND -->
+        <audio autoplay>
+            <source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg">
+        </audio>
+
+        {% elif status == "OFF" %}
+
+        <div class="off">
+            ⚠️ POWER OFF
+        </div>
+
+        {% else %}
+
+        <div class="normal">
+            ✅ TRANSFORMER NORMAL
+        </div>
+
+        {% endif %}
+
+    </h2>
+
+    <!-- EXTRA ALERTS (same thresholds as the Streamlit dashboard) -->
+    <div class="container">
+
+        {% if high_temp_alert %}
+        <div class="card" style="border: 2px solid #ef4444;">
+            🔥 HIGH TEMPERATURE ALERT
+        </div>
+        {% endif %}
+
+        {% if low_voltage_alert %}
+        <div class="card" style="border: 2px solid #facc15;">
+            ⚡ LOW VOLTAGE ALERT
+        </div>
+        {% endif %}
+
+        {% if low_oil_alert %}
+        <div class="card" style="border: 2px solid #ef4444;">
+            🛢 LOW OIL ALERT
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- GRAPH -->
+    <canvas id="graphChart" width="800" height="350"></canvas>
+
+    <!-- LAST 10 READINGS TABLE -->
+    <h2>📊 Latest Sensor Data</h2>
+    <table style="margin: 20px auto; border-collapse: collapse; width: 90%; max-width: 900px;">
+        <tr style="background: #1e293b;">
+            <th style="padding: 8px; border: 1px solid #334155;">Time</th>
+            <th style="padding: 8px; border: 1px solid #334155;">Temperature</th>
+            <th style="padding: 8px; border: 1px solid #334155;">Voltage</th>
+            <th style="padding: 8px; border: 1px solid #334155;">Current</th>
+            <th style="padding: 8px; border: 1px solid #334155;">Oil %</th>
+            <th style="padding: 8px; border: 1px solid #334155;">Status</th>
+        </tr>
+        {% for row in last_10 %}
+        <tr>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Time'] }}</td>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Temperature'] }}</td>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Voltage'] }}</td>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Current'] }}</td>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Oil_Percentage'] }}</td>
+            <td style="padding: 8px; border: 1px solid #334155;">{{ row['Status'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+
+        const ctx = document.getElementById('graphChart').getContext('2d');
+
+        const graphChart = new Chart(ctx, {
+            type: 'line',
+
+            data: {
+                labels: {{ time_data | safe }},
+
+                datasets: [
+
+                    {
+                        label: 'Voltage',
+                        data: {{ voltage_data | safe }},
+                        borderWidth: 2
+                    },
+
+                    {
+                        label: 'Current',
+                        data: {{ current_data | safe }},
+                        borderWidth: 2
+                    },
+
+                    {
+                        label: 'Temperature',
+                        data: {{ temp_data | safe }},
+                        borderWidth: 2
+                     }
+
+                ]
+            },
+
+            options: {
+                responsive: true
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
