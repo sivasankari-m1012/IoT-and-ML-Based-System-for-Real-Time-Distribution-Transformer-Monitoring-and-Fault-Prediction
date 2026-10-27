@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+instance/
+*.db
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# trained model is rebuilt with `python -m ml.train` (pickles are version-specific)
+models/*.joblib
+*.pkl
+# v1 runtime data now lives in the database
+/data.csv
+/data_old.csv
