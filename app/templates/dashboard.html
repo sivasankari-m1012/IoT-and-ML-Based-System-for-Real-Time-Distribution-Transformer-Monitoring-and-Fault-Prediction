@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Transformer {{ transformer_id }} · monitor{% endblock %}
+
+{% block body %}
+<header class="top">
+  <h1>Transformer monitor</h1>
+  <div class="top-right">
+    <label class="picker">
+      <span>Unit</span>
+      <select id="unit" onchange="location.href='/dashboard/' + this.value">
+        {% for t in transformers %}
+          <option value="{{ t.id }}" {{ 'selected' if t.id == transformer_id }}>{{ t.name }}</option>
+        {% else %}
+          <option value="{{ transformer_id }}" selected>Transformer {{ transformer_id }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <p id="link" class="link" role="status"><span class="dot" aria-hidden="true"></span><span id="link-text">Connecting…</span></p>
+  </div>
+</header>
+
+<main>
+  <section id="banner" class="banner" aria-live="polite">
+    <p class="state-word" id="state-word">Waiting</p>
+    <div>
+      <ul id="reasons" class="reasons"><li>Waiting for the first sensor reading…</li></ul>
+      <p class="when" id="when"></p>
+    </div>
+  </section>
+
+  <section class="gauges" aria-label="Latest readings">
+    {% for key, label, unit in metrics %}
+    <article class="gauge" data-metric="{{ key }}">
+      <h2>{{ label }}</h2>
+      <p class="value"><span class="num">–</span><span class="unit">{{ unit }}</span></p>
+      <div class="ruler" role="img" aria-label="{{ label }} against warning and fault limits">
+        <div class="track"></div><div class="marker" hidden></div>
+      </div>
+      <p class="limits"></p>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <h2>Last hour of readings</h2>
+      <div class="tabs" role="group" aria-label="Chart metric">
+        {% for key, label, unit in metrics %}
+        <button type="button" data-tab="{{ key }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel">
+      <h2>Active alerts</h2>
+      <ul id="alerts" class="alerts"><li class="muted">No active alerts</li></ul>
+    </section>
+    <section class="panel">
+      <h2>Recent readings</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Temp</th><th>Volt</th><th>Curr</th><th>Oil</th><th>Status</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script id="boot" type="application/json">{{ boot|tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
